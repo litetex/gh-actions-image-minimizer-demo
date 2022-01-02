@@ -36,18 +36,40 @@ jobs:
         if: steps.get-body.outputs.result != null
         with:
           script: |
-            var newBody = "${{steps.get-body.outputs.result}}" + " a bot was here"
+            var initialBody = null;
+            if (context.eventName == "issue_comment") {
+              initialBody = context.payload.comment.body
+            } else if (context.eventName == "issue") {
+              initialBody = context.payload.issue.body
+            } else if (context.eventName == "pull_request") {
+              initialBody = context.payload.pull_request.body
+            } else {
+              console.log("Aborting: No body found")
+              return
+            }
+            console.log("Found body: ", body);
+            
+            // Regex for finding images (simple variant)
+            const REGEX_IMAGE_LOOKUP = /\!\[(.{1,})\]\((https:\/\/[-a-z0-9]{1,}\.githubusercontent\.com\/\d+\/[-0-9a-f]{32,}\.(jpg|gif|png))\)/gm
+            
+            var foundSimpleImages = REGEX_IMAGE_LOOKUP.test(body);
+            if (!foundSimpleImages) {
+              console.log('Found no simple images to process');
+              return;
+            }
+            
+            var newBody = initial + " bot was here"
             
             if (context.eventName == "issue_comment") {
-              await github.rest.issues.update({
-                issue_number: context.issue.number,
+               await github.rest.issues.updateComment({
+                comment_id: context.comment.id,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: newBody
-              });
+              })
             } else if (context.eventName == "issue") {
-              await github.rest.issues.updateComment({
-                comment_id: context.comment.id,
+              await github.rest.issues.update({
+                issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: newBody
