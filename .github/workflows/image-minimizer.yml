@@ -31,7 +31,7 @@ jobs:
             var initialBody = null;
             if (context.eventName == "issue_comment") {
               initialBody = context.payload.comment.body
-            } else if (context.eventName == "issue") {
+            } else if (context.eventName == "issues") {
               initialBody = context.payload.issue.body
             } else if (context.eventName == "pull_request") {
               initialBody = context.payload.pull_request.body
@@ -106,18 +106,18 @@ jobs:
                 repo: context.repo.repo,
                 body: newBody
               })
-            } else if (context.eventName == "issue") {
-              console.log("Updating issue", context.issue.number)
+            } else if (context.eventName == "issues") {
+              console.log("Updating issue", context.payload.issue.number)
               await github.rest.issues.update({
-                issue_number: context.issue.number,
+                issue_number: context.payload.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: newBody
               });
             } else if (context.eventName == "pull_request") {
-              console.log("Updating PR", context.pull_request.number)
+              console.log("Updating PR", context.payload.pull_request.number)
               await github.rest.pulls.update({
-                pull_number: context.pull_request.number,
+                pull_number: context.payload.pull_request.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: newBody
