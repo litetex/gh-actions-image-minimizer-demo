@@ -43,12 +43,14 @@ jobs:
               return;
             }
             
+            console.log('Found at least one simple image to process');
+            
             var newBody = initialBody + " bot was here"
             
             if (context.eventName == "issue_comment") {
-              console.log("Updating comment with id", context.comment.id)
+              console.log("Updating comment with id", context.payload.comment.id)
               await github.rest.issues.updateComment({
-                comment_id: context.comment.id,
+                comment_id: context.payload.comment.id,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: newBody
