@@ -83,7 +83,7 @@ jobs:
               
               if (shouldModifiy) {
                 console.log("Modifying match '" + match + "'")
-                return "<img alt=\"" + g1 + "\" src=\"" + g2 + "\" width=200 />"
+                return "<img alt=\"" + g1 + "\" src=\"" + g2 + "\" height=" + IMG_MAX_HEIGHT_PX + " />"
               }
               
               console.log("Match '" + match + "' is ok/will not be modified")
