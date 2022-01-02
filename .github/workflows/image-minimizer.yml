@@ -36,26 +36,29 @@ jobs:
         if: steps.get-body.outputs.result != null
         with:
           script: |
+            var newBody = ${{steps.get-body.outputs.result}} + " a bot was here"
+            
+            console.log("TEST1")
+            
             if (context.eventName == "issue_comment") {
               await github.rest.issues.update({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: ${{steps.get-body.outputs.result}}
+                body: newBody
               });
             } else if (context.eventName == "issue") {
               await github.rest.issues.updateComment({
                 comment_id: context.comment.id,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: ${{steps.get-body.outputs.result}}
+                body: newBody
               });
             } else if (context.eventName == "pull_request") {
               await github.rest.pulls.update({
                 pull_number: context.pull_number.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: ${{steps.get-body.outputs.result}}
+                body: newBody
               });
             }
-            return null
