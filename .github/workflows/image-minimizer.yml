@@ -36,9 +36,7 @@ jobs:
         if: steps.get-body.outputs.result != null
         with:
           script: |
-            var newBody = ${{steps.get-body.outputs.result}} + " a bot was here"
-            
-            console.log("TEST1")
+            var newBody = "${{steps.get-body.outputs.result}}" + " a bot was here"
             
             if (context.eventName == "issue_comment") {
               await github.rest.issues.update({
