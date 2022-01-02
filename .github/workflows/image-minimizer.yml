@@ -58,7 +58,7 @@ jobs:
             
             
             var newBody = initialBody.replace(REGEX_IMAGE_LOOKUP, (match, g1, g2) => {
-              console.log("Found match '" + match + "')
+              console.log("Found match '" + match + "'")
               
               if (g1.endsWith(IGNORE_ALT_NAME_END)) {
                 console.log("Ignoring match '" + match + "': IGNORE_ALT_NAME_END")
