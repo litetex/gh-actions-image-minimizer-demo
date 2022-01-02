@@ -25,6 +25,7 @@ jobs:
             const IGNORE_ALT_NAME_END = 'ignoreImageMinify'
             const IMG_MAX_HEIGHT_PX = 600
             
+            // Get the body of the image
             var initialBody = null;
             if (context.eventName == "issue_comment") {
               initialBody = context.payload.comment.body
@@ -38,14 +39,16 @@ jobs:
             }
             console.log("Found body: '" + initialBody + "'")
             
+            // Check if we should ignore the currently processing element
             if (initialBody.includes(IGNORE_KEY)) {
               console.log('Ignoring: Body contains IGNORE_KEY')
               return;
             }
             
-            // Regex for finding images (simple variant)
+            // Regex for finding images (simple variant) ![ALT_TEXT](https://*.githubusercontent.com/<number>/<variousHexStringsAnd->.<fileExtension>)
             const REGEX_IMAGE_LOOKUP = /\!\[(.{1,})\]\((https:\/\/[-a-z0-9]{1,}\.githubusercontent\.com\/\d+\/[-0-9a-f]{32,}\.(jpg|gif|png))\)/gm
             
+            // Check if we found something
             var foundSimpleImages = REGEX_IMAGE_LOOKUP.test(initialBody);
             if (!foundSimpleImages) {
               console.log('Found no simple images to process');
@@ -54,8 +57,10 @@ jobs:
             
             console.log('Found at least one simple image to process');
             
+            // Require the probe lib for getting the image dimensions
             const probe = require('probe-image-size');
             
+            // Try to find and replace the images with minimized ones
             var newBody = await replaceAsync(initialBody, REGEX_IMAGE_LOOKUP, async (match, g1, g2) => {
               console.log("Found match '" + match + "'")
               
@@ -90,6 +95,7 @@ jobs:
               return match;
             });
             
+            // Update the corresponding element
             if (context.eventName == "issue_comment") {
               console.log("Updating comment with id", context.payload.comment.id)
               await github.rest.issues.updateComment({
@@ -116,6 +122,7 @@ jobs:
               });
             }
             
+            // Asnyc replace function from https://stackoverflow.com/a/48032528
             async function replaceAsync(str, regex, asyncFn) {
                 const promises = [];
                 str.replace(regex, (match, ...args) => {
