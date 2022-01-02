@@ -18,6 +18,44 @@ jobs:
 
     steps:
       - uses: actions/github-script@v5
+        id: get-body
         with:
           script: |
-            console.log(context)
+            if (context.eventName == "issue_comment") {
+              return context.payload.comment.body
+            } else if (context.eventName == "issue") {
+              return context.payload.issue.body
+            } else if (context.eventName == "pull_request") {
+              return context.payload.pull_request.body
+            }
+            return null
+          result-encoding: string
+        
+      - uses: actions/github-script@v5
+        id: set-body
+        if: steps.get-body.outputs.result != null
+        with:
+          script: |
+            if (context.eventName == "issue_comment") {
+              await github.rest.issues.update({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: ${{steps.get-body.outputs.result}}
+              });
+            } else if (context.eventName == "issue") {
+              await github.rest.issues.updateComment({
+                comment_id: context.comment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: ${{steps.get-body.outputs.result}}
+              });
+            } else if (context.eventName == "pull_request") {
+              await github.rest.pulls.update({
+                pull_number: context.pull_number.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: ${{steps.get-body.outputs.result}}
+              });
+            }
+            return null
