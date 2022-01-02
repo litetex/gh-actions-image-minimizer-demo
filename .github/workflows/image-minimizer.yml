@@ -17,23 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/github-script@v5
-        id: get-body
-        with:
-          script: |
-            if (context.eventName == "issue_comment") {
-              return context.payload.comment.body
-            } else if (context.eventName == "issue") {
-              return context.payload.issue.body
-            } else if (context.eventName == "pull_request") {
-              return context.payload.pull_request.body
-            }
-            return null
-          result-encoding: string
-        
-      - uses: actions/github-script@v5
-        id: set-body
-        if: steps.get-body.outputs.result != null
+      - name: Minimize simple images
+        uses: actions/github-script@v5
         with:
           script: |
             var initialBody = null;
@@ -47,18 +32,18 @@ jobs:
               console.log("Aborting: No body found")
               return
             }
-            console.log("Found body: ", body);
+            console.log("Found body: ", initialBody);
             
             // Regex for finding images (simple variant)
             const REGEX_IMAGE_LOOKUP = /\!\[(.{1,})\]\((https:\/\/[-a-z0-9]{1,}\.githubusercontent\.com\/\d+\/[-0-9a-f]{32,}\.(jpg|gif|png))\)/gm
             
-            var foundSimpleImages = REGEX_IMAGE_LOOKUP.test(body);
+            var foundSimpleImages = REGEX_IMAGE_LOOKUP.test(initialBody);
             if (!foundSimpleImages) {
               console.log('Found no simple images to process');
               return;
             }
             
-            var newBody = initial + " bot was here"
+            var newBody = initialBody + " bot was here"
             
             if (context.eventName == "issue_comment") {
                await github.rest.issues.updateComment({
