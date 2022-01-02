@@ -23,16 +23,16 @@ jobs:
           script: |
             var initialBody = null;
             if (context.eventName == "issue_comment") {
-              initialBody = context.payload.comment.body
+              initialBody = context.comment.body
             } else if (context.eventName == "issue") {
-              initialBody = context.payload.issue.body
+              initialBody = context.issue.body
             } else if (context.eventName == "pull_request") {
-              initialBody = context.payload.pull_request.body
+              initialBody = context.pull_request.body
             } else {
               console.log("Aborting: No body found")
               return
             }
-            console.log("Found body: ", initialBody);
+            console.log("Found body", initialBody);
             
             // Regex for finding images (simple variant)
             const REGEX_IMAGE_LOOKUP = /\!\[(.{1,})\]\((https:\/\/[-a-z0-9]{1,}\.githubusercontent\.com\/\d+\/[-0-9a-f]{32,}\.(jpg|gif|png))\)/gm
@@ -46,13 +46,15 @@ jobs:
             var newBody = initialBody + " bot was here"
             
             if (context.eventName == "issue_comment") {
-               await github.rest.issues.updateComment({
+              console.log("Updating comment with id", context.comment.id)
+              await github.rest.issues.updateComment({
                 comment_id: context.comment.id,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: newBody
               })
             } else if (context.eventName == "issue") {
+              console.log("Updating issue", context.issue.number)
               await github.rest.issues.update({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
@@ -60,6 +62,7 @@ jobs:
                 body: newBody
               });
             } else if (context.eventName == "pull_request") {
+              console.log("Updating PR", context.pull_number.number)
               await github.rest.pulls.update({
                 pull_number: context.pull_number.number,
                 owner: context.repo.owner,
