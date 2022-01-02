@@ -67,7 +67,14 @@ jobs:
               
               let shouldModifiy = false;
               try {
-                let probeResult = await probe(g2)
+                let probeResult = probe.sync(g2)
+                if (probeResult == null) {
+                  throw "No probe-result"
+                }
+                if (probeResult.hUnits != 'px') {
+                  throw "Unexpected probeResult.hUnits: " + probeResult.hUnits
+                }
+                
                 shouldModifiy = probeResult.height > IMG_MAX_HEIGHT
               } catch(e) {
                 console.log('Probing failed', e);
