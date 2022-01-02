@@ -25,6 +25,8 @@ jobs:
             const IGNORE_ALT_NAME_END = 'ignoreImageMinify'
             const IMG_MAX_HEIGHT_PX = 600
             
+            console.log(context)
+            
             // Get the body of the image
             var initialBody = null;
             if (context.eventName == "issue_comment") {
