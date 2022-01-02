@@ -1,0 +1,23 @@
+name: Image Minimizer
+
+permissions:
+  issues: write
+  pull-requests: write
+
+on:
+  issue_comment:
+    types: [created, edited]
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  try-minimize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/github-script@v5
+        with:
+          script: |
+            console.log(context)
