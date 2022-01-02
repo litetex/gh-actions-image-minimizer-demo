@@ -23,11 +23,11 @@ jobs:
           script: |
             var initialBody = null;
             if (context.eventName == "issue_comment") {
-              initialBody = context.comment.body
+              initialBody = context.payload.comment.body
             } else if (context.eventName == "issue") {
-              initialBody = context.issue.body
+              initialBody = context.payload.issue.body
             } else if (context.eventName == "pull_request") {
-              initialBody = context.pull_request.body
+              initialBody = context.payload.pull_request.body
             } else {
               console.log("Aborting: No body found")
               return
@@ -62,9 +62,9 @@ jobs:
                 body: newBody
               });
             } else if (context.eventName == "pull_request") {
-              console.log("Updating PR", context.pull_number.number)
+              console.log("Updating PR", context.pull_request.number)
               await github.rest.pulls.update({
-                pull_number: context.pull_number.number,
+                pull_number: context.pull_request.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: newBody
