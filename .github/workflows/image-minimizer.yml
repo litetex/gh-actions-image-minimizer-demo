@@ -21,6 +21,10 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
+            const IGNORE_KEY = '<!-- IGNORE IMAGE MINIFY -->';
+            const IGNORE_ALT_NAME_END = 'ignoreImageMinify'
+            const IMG_MAX_HEIGHT = 600
+            
             var initialBody = null;
             if (context.eventName == "issue_comment") {
               initialBody = context.payload.comment.body
@@ -32,7 +36,12 @@ jobs:
               console.log("Aborting: No body found")
               return
             }
-            console.log("Found body", initialBody);
+            console.log("Found body: '" + initialBody + "'")
+            
+            if (initialBody.includes(IGNORE_KEY) {
+              console.log('Ignoring: Body contains IGNORE_KEY')
+              return;
+            }
             
             // Regex for finding images (simple variant)
             const REGEX_IMAGE_LOOKUP = /\!\[(.{1,})\]\((https:\/\/[-a-z0-9]{1,}\.githubusercontent\.com\/\d+\/[-0-9a-f]{32,}\.(jpg|gif|png))\)/gm
@@ -45,7 +54,33 @@ jobs:
             
             console.log('Found at least one simple image to process');
             
-            var newBody = initialBody + " bot was here"
+            const probe = require('probe-image-size');
+            
+            
+            var newBody = initialBody.replace(REGEX_IMAGE_LOOKUP, (match, g1, g2) => {
+              console.log("Found match '" + match + "')
+              
+              if (g1.endsWith(IGNORE_ALT_NAME_END)) {
+                console.log("Ignoring match '" + match + "': IGNORE_ALT_NAME_END")
+                return match;
+              }
+              
+              let shouldModifiy = false;
+              try {
+                let probeResult = await probe(g2)
+                shouldModifiy = probeResult.height > IMG_MAX_HEIGHT
+              } catch(e) {
+                console.log('Probing failed', e);
+              }
+              
+              if (shouldModifiy) {
+                console.log("Modifying match '" + match + "'")
+                return "<img alt=" + g1 + " src=" + g2 +" width=200 />"
+              }
+              
+              console.log("Match '" + match + "' is ok")
+              return match;
+            });
             
             if (context.eventName == "issue_comment") {
               console.log("Updating comment with id", context.payload.comment.id)
