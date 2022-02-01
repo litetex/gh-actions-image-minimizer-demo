@@ -25,4 +25,4 @@ jobs:
         with:
           script: |
             const script = require('.github/workflows/image-minimizer.js')
-            console.log(script({github, context}))
+            await script({github, context})
