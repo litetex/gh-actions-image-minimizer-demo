@@ -22,6 +22,7 @@ jobs:
 
       - name: Minimize simple images
         uses: actions/github-script@v5
+        timeout-minutes: 3
         with:
           script: |
             const script = require('.github/workflows/image-minimizer.js')
