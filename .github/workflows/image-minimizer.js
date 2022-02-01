@@ -7,7 +7,7 @@ module.exports = async ({github, context}) => {
     const IMG_MAX_HEIGHT_PX = 600
 
     // Get the body of the image
-    var initialBody = null;
+    let initialBody = null;
     if (context.eventName == "issue_comment") {
         initialBody = context.payload.comment.body
     } else if (context.eventName == "issues") {
@@ -28,7 +28,7 @@ module.exports = async ({github, context}) => {
     const REGEX_IMAGE_LOOKUP = /\!\[(.{0,})\]\((https:\/\/[-a-z0-9]{1,}\.githubusercontent\.com\/\d+\/[-0-9a-f]{32,}\.(jpg|gif|png))\)/gm
 
     // Check if we found something
-    var foundSimpleImages = REGEX_IMAGE_LOOKUP.test(initialBody);
+    let foundSimpleImages = REGEX_IMAGE_LOOKUP.test(initialBody);
     if (!foundSimpleImages) {
         console.log('Found no simple images to process');
         return;
@@ -40,34 +40,34 @@ module.exports = async ({github, context}) => {
     const probe = require('probe-image-size');
 
     // Try to find and replace the images with minimized ones
-    var newBody = await replaceAsync(initialBody, REGEX_IMAGE_LOOKUP, async (match, g1, g2) => {
+    let newBody = await replaceAsync(initialBody, REGEX_IMAGE_LOOKUP, async (match, g1, g2) => {
         console.log("Found match '" + match + "'")
         
         if (g1.endsWith(IGNORE_ALT_NAME_END)) {
-        console.log("Ignoring match '" + match + "': IGNORE_ALT_NAME_END")
-        return match;
+            console.log("Ignoring match '" + match + "': IGNORE_ALT_NAME_END")
+            return match;
         }
         
         let shouldModifiy = false;
         try {
-        console.log("Probing " + g2);
-        let probeResult = await probe(g2)
-        if (probeResult == null) {
-            throw "No probeResult"
-        }
-        if (probeResult.hUnits != 'px') {
-            throw "Unexpected probeResult.hUnits (expected px but got " + probeResult.hUnits + ")"
-        }
-        
-        shouldModifiy = probeResult.height > IMG_MAX_HEIGHT_PX
+            console.log("Probing " + g2);
+            let probeResult = await probe(g2)
+            if (probeResult == null) {
+                throw "No probeResult"
+            }
+            if (probeResult.hUnits != 'px') {
+                throw "Unexpected probeResult.hUnits (expected px but got " + probeResult.hUnits + ")"
+            }
+            
+            shouldModifiy = probeResult.height > IMG_MAX_HEIGHT_PX
         } catch(e) {
-        console.log('Probing failed:', e);
-        shouldModifiy = false
+            console.log('Probing failed:', e);
+            shouldModifiy = false
         }
         
         if (shouldModifiy) {
-        console.log("Modifying match '" + match + "'")
-        return "<img alt=\"" + g1 + "\" src=\"" + g2 + "\" height=" + IMG_MAX_HEIGHT_PX + " />"
+            console.log("Modifying match '" + match + "'")
+            return "<img alt=\"" + g1 + "\" src=\"" + g2 + "\" height=" + IMG_MAX_HEIGHT_PX + " />"
         }
         
         console.log("Match '" + match + "' is ok/will not be modified")
@@ -78,18 +78,18 @@ module.exports = async ({github, context}) => {
     if (context.eventName == "issue_comment") {
         console.log("Updating comment with id", context.payload.comment.id)
         await github.rest.issues.updateComment({
-        comment_id: context.payload.comment.id,
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        body: newBody
+            comment_id: context.payload.comment.id,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: newBody
         })
     } else if (context.eventName == "issues") {
         console.log("Updating issue", context.payload.issue.number)
         await github.rest.issues.update({
-        issue_number: context.payload.issue.number,
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        body: newBody
+            issue_number: context.payload.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: newBody
         });
     }
 
