@@ -16,7 +16,7 @@ module.exports = async ({github, context}) => {
         console.log('Aborting: No body found');
         return;
     }
-    console.log(`Found body: '${initialBody}'`);
+    console.log(`Found body: \n${initialBody}\n`);
 
     // Check if we should ignore the currently processing element
     if (initialBody.includes(IGNORE_KEY)) {
