@@ -16,7 +16,7 @@ module.exports = async ({github, context}) => {
         console.log('Aborting: No body found');
         return;
     }
-    console.log(`Found body: '${initialBody}'`)
+    console.log(`Found body: '${initialBody}'`);
 
     // Check if we should ignore the currently processing element
     if (initialBody.includes(IGNORE_KEY)) {
@@ -41,7 +41,7 @@ module.exports = async ({github, context}) => {
 
     // Try to find and replace the images with minimized ones
     let newBody = await replaceAsync(initialBody, REGEX_IMAGE_LOOKUP, async (match, g1, g2) => {
-        console.log(`Found match '${match}'`):
+        console.log(`Found match '${match}'`);
         
         if (g1.endsWith(IGNORE_ALT_NAME_END)) {
             console.log(`Ignoring match '${match}': IGNORE_ALT_NAME_END`);
