@@ -5,6 +5,10 @@ module.exports = async ({github, context}) => {
     const IGNORE_KEY = '<!-- IGNORE IMAGE MINIFY -->';
     const IGNORE_ALT_NAME_END = 'ignoreImageMinify';
     const IMG_MAX_HEIGHT_PX = 600;
+    // maximum width of GitHub inside issues
+    const IMG_MAX_WIDTH_PX = 800;
+    // all images that have a higher aspect ration (-> are wider) than this will be minimized
+    const MAX_ASPECT_RATION = IMG_MAX_WIDTH_PX / IMG_MAX_HEIGHT_PX
 
     // Get the body of the image
     let initialBody = null;
@@ -49,7 +53,6 @@ module.exports = async ({github, context}) => {
         }
         
         let shouldModify = false;
-        let newWidth = '';
         try {
             console.log(`Probing ${g2}`);
             let probeResult = await probe(g2);
@@ -59,15 +62,17 @@ module.exports = async ({github, context}) => {
             if (probeResult.hUnits != 'px') {
                 throw `Unexpected probeResult.hUnits (expected px but got ${probeResult.hUnits})`;
             }
+            if (probeResult.height <= 0) {
+                throw `Unexpected probeResult.height (height is invalid: ${probeResult.height})`;
+            }
             if (probeResult.wUnits != 'px') {
                 throw `Unexpected probeResult.wUnits (expected px but got ${probeResult.wUnits})`;
             }
-            
-            shouldModify = probeResult.height > IMG_MAX_HEIGHT_PX;
-            // If the image width is bigger that the height we also have to modify the height or we end up with strected images
-            if (shouldModify && probeResult.width > probeResult.height) {
-                newWidth = ` width=${Math.round(IMG_MAX_HEIGHT_PX / probeResult.height * probeResult.width)}`
+            if (probeResult.width <= 0) {
+                throw `Unexpected probeResult.width (width is invalid: ${probeResult.width})`;
             }
+            
+            shouldModify = probeResult.height > IMG_MAX_HEIGHT_PX && (probeResult.width / probeResult.height) > MAX_ASPECT_RATION;
         } catch(e) {
             console.log('Probing failed:', e);
             // Immediately abort
@@ -76,7 +81,7 @@ module.exports = async ({github, context}) => {
         
         if (shouldModify) {
             console.log(`Modifying match '${match}'`);
-            return `<img alt="${g1}" src="${g2}" height=${IMG_MAX_HEIGHT_PX}${newWidth} />`;
+            return `<img alt="${g1}" src="${g2}" height=${IMG_MAX_HEIGHT_PX} />`;
         }
         
         console.log(`Match '${match}' is ok/will not be modified`);
