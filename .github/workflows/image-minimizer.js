@@ -49,6 +49,7 @@ module.exports = async ({github, context}) => {
         }
         
         let shouldModifiy = false;
+        let newWidth = '';
         try {
             console.log(`Probing ${g2}`);
             let probeResult = await probe(g2);
@@ -58,8 +59,15 @@ module.exports = async ({github, context}) => {
             if (probeResult.hUnits != 'px') {
                 throw `Unexpected probeResult.hUnits (expected px but got ${probeResult.hUnits})`;
             }
+            if (probeResult.wUnits != 'px') {
+                throw `Unexpected probeResult.wUnits (expected px but got ${probeResult.wUnits})`;
+            }
             
             shouldModifiy = probeResult.height > IMG_MAX_HEIGHT_PX;
+            // If the image width is bigger that the height we also have to modify the height or we end up with strected images
+            if (shouldModify && probeResult.width > probeResult.height) {
+                newWidth = ` width=${Math.round(IMG_MAX_HEIGHT_PX / probeResult.height * probeResult.width)}`
+            }
         } catch(e) {
             console.log('Probing failed:', e);
             // Immediately abort
@@ -68,7 +76,7 @@ module.exports = async ({github, context}) => {
         
         if (shouldModifiy) {
             console.log(`Modifying match '${match}'`);
-            return `<img alt="${g1}" src="${g2}" height=${IMG_MAX_HEIGHT_PX} />`;
+            return `<img alt="${g1}" src="${g2}" height=${IMG_MAX_HEIGHT_PX}${newWidth} />`;
         }
         
         console.log(`Match '${match}' is ok/will not be modified`);
