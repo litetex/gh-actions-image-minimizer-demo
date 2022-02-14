@@ -71,9 +71,17 @@ module.exports = async ({github, context}) => {
             if (probeResult.width <= 0) {
                 throw `Unexpected probeResult.width (width is invalid: ${probeResult.width})`;
             }
-            console.log(`Probing resulted in ${probeResult.width}x${probeResult.height} px`);
+            console.log(`Probing resulted in ${probeResult.width}x${probeResult.height}px`);
             
-            shouldModify = probeResult.height > IMG_MAX_HEIGHT_PX && (probeResult.width / probeResult.height) > MAX_ASPECT_RATION;
+            if (probeResult.height > IMG_MAX_HEIGHT_PX) {
+                console.log(`Height is bigger than IMG_MAX_HEIGHT_PX ${IMG_MAX_HEIGHT_PX}`);
+                let aspectRatio = probeResult.width / probeResult.height;
+                console.log(`Aspect ration is ${aspectRatio}`);
+                if (aspectRatio > MAX_ASPECT_RATION) {
+                    console.log(`Aspect ration is bigger than MAX_ASPECT_RATION ${MAX_ASPECT_RATION}`);
+                    shouldModify = true;
+                }
+            }
         } catch(e) {
             console.log('Probing failed:', e);
             // Immediately abort
