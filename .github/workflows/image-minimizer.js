@@ -48,10 +48,7 @@ module.exports = async ({github, context}) => {
             return match;
         }
         
-        let 
-        
-        
-        = false;
+        let shouldModify = false;
         let newWidth = '';
         try {
             console.log(`Probing ${g2}`);
