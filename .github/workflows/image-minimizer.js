@@ -5,7 +5,7 @@ module.exports = async ({github, context}) => {
     const IGNORE_KEY = '<!-- IGNORE IMAGE MINIFY -->';
     const IGNORE_ALT_NAME_END = 'ignoreImageMinify';
     const IMG_MAX_HEIGHT_PX = 600;
-    // maximum width of GitHub inside issues
+    // maximum width of GitHub issues/comments
     const IMG_MAX_WIDTH_PX = 800;
     // all images that have a higher aspect ration (-> are wider) than this will be minimized
     const MAX_ASPECT_RATION = IMG_MAX_WIDTH_PX / IMG_MAX_HEIGHT_PX
@@ -71,6 +71,7 @@ module.exports = async ({github, context}) => {
             if (probeResult.width <= 0) {
                 throw `Unexpected probeResult.width (width is invalid: ${probeResult.width})`;
             }
+            console.log(`Probing resulted in ${probeResult.width}x${probeResult.height} px`);
             
             shouldModify = probeResult.height > IMG_MAX_HEIGHT_PX && (probeResult.width / probeResult.height) > MAX_ASPECT_RATION;
         } catch(e) {
