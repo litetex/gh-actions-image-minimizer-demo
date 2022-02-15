@@ -44,7 +44,7 @@ module.exports = async ({github, context}) => {
     // Require the probe lib for getting the image dimensions
     const probe = require('probe-image-size');
     
-    var executedModification = false;
+    var wasMatchModified = false;
 
     // Try to find and replace the images with minimized ones
     let newBody = await replaceAsync(initialBody, REGEX_IMAGE_LOOKUP, async (match, g1, g2) => {
@@ -84,7 +84,7 @@ module.exports = async ({github, context}) => {
         }
         
         if (shouldModify) {
-            executedModification = true;
+            wasMatchModified = true;
             console.log(`Modifying match '${match}'`);
             return `<img alt="${g1}" src="${g2}" height=${IMG_MAX_HEIGHT_PX} />`;
         }
@@ -93,7 +93,7 @@ module.exports = async ({github, context}) => {
         return match;
     });
     
-    if (!executedModification) {
+    if (!wasMatchModified) {
         console.log('Nothing was modified. Skipping update');
         return;
     }
